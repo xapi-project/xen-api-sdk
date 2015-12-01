@@ -201,7 +201,7 @@ void xen_fini(void);
 extern xen_session *
 xen_session_login_with_password(xen_call_func call_func, void *handle,
                                 const char *uname, const char *pwd,
-                                xen_api_version version);
+                                xen_api_version version, const char *originator);
 
 
 /**

@@ -225,7 +225,7 @@ xen_session_record_free(xen_session_record *record)
 xen_session *
 xen_session_login_with_password(xen_call_func call_func, void *handle,
                                 const char *uname, const char *pwd,
-                                xen_api_version version)
+                                xen_api_version version, const char *originator)
 {
     abstract_value params[] =
         {
@@ -234,7 +234,9 @@ xen_session_login_with_password(xen_call_func call_func, void *handle,
             { .type = &abstract_type_string,
               .u.string_val = pwd },
             { .type = &abstract_type_string,
-              .u.string_val = xen_api_version_to_string(version) }
+              .u.string_val = xen_api_version_to_string(version) },
+            { .type = &abstract_type_string,
+              .u.string_val = originator }
         };
 
     xen_session *session = malloc(sizeof(xen_session));
@@ -246,7 +248,7 @@ xen_session_login_with_password(xen_call_func call_func, void *handle,
     session->error_description_count = 0;
     session->api_version = version;
 
-    call_raw(session, "session.login_with_password", params, 3,
+    call_raw(session, "session.login_with_password", params, 4,
              &abstract_type_string, &session->session_id);
 
     if (!session->ok &&
@@ -255,8 +257,6 @@ xen_session_login_with_password(xen_call_func call_func, void *handle,
         !strcmp(session->error_description[0],
                 "MESSAGE_PARAMETER_COUNT_MISMATCH"))
     {
-        // We're calling an API 1.1 host.
-
         for (int i = 0; i < session->error_description_count; i++)
         {
             free(session->error_description[i]);
@@ -267,8 +267,28 @@ xen_session_login_with_password(xen_call_func call_func, void *handle,
         session->error_description_count = 0;
         session->ok = true;
 
-        call_raw(session, "session.login_with_password", params, 2,
-                 &abstract_type_string, &session->session_id);
+        call_raw(session, "session.login_with_password", params, 3,
+            &abstract_type_string, &session->session_id);
+
+        if (!session->ok &&
+        session->error_description_count == 4 &&
+        session->error_description != NULL &&
+        !strcmp(session->error_description[0],
+                "MESSAGE_PARAMETER_COUNT_MISMATCH"))
+        {
+            for (int i = 0; i < session->error_description_count; i++)
+            {
+                free(session->error_description[i]);
+            }
+            free(session->error_description);
+
+            session->error_description = NULL;
+            session->error_description_count = 0;
+            session->ok = true;
+            
+            call_raw(session, "session.login_with_password", params, 2,
+            &abstract_type_string, &session->session_id);
+        }
     }
 
     if (session->ok)

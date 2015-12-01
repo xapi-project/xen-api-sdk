@@ -403,7 +403,7 @@ main(int argc, char **argv)
     curl_global_init(CURL_GLOBAL_ALL);
 
     session = xen_session_login_with_password(call_func, NULL, username,
-            password, xen_api_latest_version);
+            password, xen_api_latest_version, "originator_libxenserver_test");
 
     /* get all vm entries */
     if (xen_vm_get_all(session, &vm_set))
