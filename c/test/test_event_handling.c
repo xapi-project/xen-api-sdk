@@ -169,7 +169,7 @@ int main(int argc, char **argv)
     
     xen_session *session =
         xen_session_login_with_password(call_func, NULL, username, password,
-                                        xen_api_latest_version);
+                                        xen_api_latest_version, "originator_libxenserver_test");
 
     const char* ALL_CLASSES = "*";
     char *all_classes = calloc(1, sizeof(all_classes));

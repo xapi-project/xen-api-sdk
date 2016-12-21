@@ -156,7 +156,8 @@ int main(int argc, char **argv)
 
     
     xen_session *session = xen_session_login_with_password(call_func, NULL,
-                               username, password, xen_api_latest_version);
+                               username, password, xen_api_latest_version,
+                               "originator_libxenserver_test");
 
     
     /* Print some info for hosts */
