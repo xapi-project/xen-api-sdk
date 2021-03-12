@@ -1,5 +1,9 @@
 # XenAPI Software Development Kit
 
+## This repository is now deprecated. Its code has been merged into https://github.com/xapi-project/xen-api
+
+\
+\
 [![Build Status](https://travis-ci.org/xapi-project/xen-api-sdk.svg?branch=master)](https://travis-ci.org/xapi-project/xen-api-sdk)
 [![Lines of Code](https://tokei.rs/b1/github/xapi-project/xen-api-sdk)](https://github.com/xapi-project/xen-api-sdk)
 
