@@ -30,8 +30,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -168,6 +170,7 @@ namespace XenAPI
         /// IMPORTANT: the latter may contain sensitive data, so handle it carefully.
         /// </summary>
         public event Action<string> RequestEvent;
+        public event Action<string> ResponseEvent;
 
         public JsonRpcVersion JsonRpcVersion { get; set; }
         public string UserAgent { get; set; }
@@ -218,9 +221,7 @@ namespace XenAPI
             // from the Stream rather than allocating strings inbetween
             // therefore the latter will be done only in DEBUG mode
 
-#if DEBUG
             var settings = CreateSettings(serializer.Converters);
-#endif
 
             using (var str = webRequest.GetRequestStream())
             using (var sw = new StreamWriter(str))
@@ -257,7 +258,31 @@ namespace XenAPI
                                 string json2 = responseReader.ReadToEnd();
                                 var res2 = JsonConvert.DeserializeObject<JsonResponseV2<T>>(json2, settings);
 #else
-                                var res2 = (JsonResponseV2<T>)serializer.Deserialize(responseReader, typeof(JsonResponseV2<T>));
+                                JsonResponseV2<T> res2;
+
+                                if (callName == "VM.get_record")
+                                {
+                                    string json2 = responseReader.ReadToEnd();
+
+                                    var requestProperties = TypeDescriptor.GetProperties(webRequest);
+                                    var requestSb = new StringBuilder("\n*** WebRequest Properties:\n");
+                                    foreach (PropertyDescriptor prop in requestProperties)
+                                        requestSb.AppendFormat("{0} {1}={2}\n", prop.PropertyType, prop.Name, prop.GetValue(webRequest));
+
+                                    var responseProperties = TypeDescriptor.GetProperties(webResponse);
+                                    var responseSb = new StringBuilder("*** WebResponse Properties:\n");
+                                    foreach (PropertyDescriptor prop in responseProperties)
+                                        responseSb.AppendFormat("{0} {1}={2}\n", prop.PropertyType, prop.Name, prop.GetValue(webResponse));
+
+                                    if (ResponseEvent != null)
+                                        ResponseEvent(string.Format("{0}\n\n{1}\n\n{2}\n\n", requestSb, responseSb, json2));
+
+                                    res2 = JsonConvert.DeserializeObject<JsonResponseV2<T>>(json2, settings);
+                                }
+                                else
+                                {
+                                    res2 = (JsonResponseV2<T>)serializer.Deserialize(responseReader, typeof(JsonResponseV2<T>));
+                                }
 #endif
                                 if (res2.Error != null)
                                 {
