@@ -139,7 +139,7 @@
     <value>This operation cannot be completed because the server is in use.</value>
   </data>
   <data name="HOST_IS_SLAVE" xml:space="preserve">
-    <value>The server that you are talking to is a slave</value>
+    <value>The server that you are talking to is a pool member</value>
   </data>
   <data name="HOST_NOT_DISABLED" xml:space="preserve">
     <value>This server cannot be enabled as it is not disabled.</value>
